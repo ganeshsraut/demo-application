@@ -24,4 +24,4 @@ jobs:
 
       - name: Run new container
         run: |
-          docker run -d --name my-nginx -p 8080:80 my-nginx-app
+          docker run -d --name my-nginx -p 81:80 my-nginx-app
