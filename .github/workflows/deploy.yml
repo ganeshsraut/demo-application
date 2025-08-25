@@ -1,8 +1,9 @@
-name: CI/CD for Dockerized Nginx
-
+name: CI/CD Pipeline
 on:
   push:
     branches: [ "main" ]   # Run on push to main branch
+  pull_request:
+    branches: [ "main" ]
   workflow_dispatch:       # Allow manual trigger
 
 jobs:
@@ -25,3 +26,24 @@ jobs:
       - name: Run new container
         run: |
           docker run -d --name my-nginx -p 81:80 my-nginx-app
+
+    # ✅ Send email if job fails
+      - name: Send Gmail Notification
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 487
+          username: ${{ secrets.GMAIL_USER }}
+          password: ${{ secrets.GMAIL_PASS }}
+          subject: "🚨 GitHub Actions CI Failed for ${{ github.repository }}"
+          body: |
+            The CI/CD pipeline failed on:
+            - Repo: ${{ github.repository }}
+            - Branch: ${{ github.ref }}
+            - Commit: ${{ github.sha }}
+            - Actor: ${{ github.actor }}
+
+            Check logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          to: "ramaraghav77@gmail.com"
+          from: "CI Bot <${{ secrets.GMAIL_USER }}>"
