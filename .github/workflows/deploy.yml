@@ -1,0 +1,27 @@
+name: CI/CD for Dockerized Nginx
+
+on:
+  push:
+    branches: [ "main" ]   # Run on push to main branch
+  workflow_dispatch:       # Allow manual trigger
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted    # Run on your localhost runner
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t my-nginx-app .
+
+      - name: Stop old container (if exists)
+        run: |
+          if [ "$(docker ps -q -f name=my-nginx)" ]; then
+            docker stop my-nginx && docker rm my-nginx
+          fi
+
+      - name: Run new container
+        run: |
+          docker run -d --name my-nginx -p 8080:80 my-nginx-app
